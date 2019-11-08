@@ -10,27 +10,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Version stores the program version info
 var Version string = "unkown"
 
-type cliFlags struct {
-	version *bool // value of -version
-}
-
-type cliArgs struct {
-	clearPassword *string // value of arg 1
+type commandLineInfo struct {
+	versionFlag      *bool   // ptr to value of -version
+	clearPasswordArg *string // ptr to value of arg 1 or nil if no arg
 }
 
 func main() {
-	cli_flags := getCliFlags()
-	cli_args := getCliArgs()
+	clInfo := getCommandLineInfo()
 
-	if *cli_flags.version { // check -version flag
+	if *clInfo.versionFlag { // check -version flag
 		printVersionAndExit()
 	}
 
 	var clearPassword []byte
-	if cli_args.clearPassword != nil {
-		clearPassword = []byte(*cli_args.clearPassword)
+	if clInfo.clearPasswordArg != nil {
+		clearPassword = []byte(*clInfo.clearPasswordArg)
 	} else {
 		reader := bufio.NewReader(os.Stdin)
 		rawInputText, err := reader.ReadString('\n')
@@ -57,23 +54,21 @@ func printVersionAndExit() {
 	os.Exit(0)
 }
 
-func getCliFlags() cliFlags {
-	cli_flags := cliFlags{}
+func getCommandLineInfo() commandLineInfo {
+	clInfo := commandLineInfo{}
 
-	cli_flags.version = flag.Bool("version", false, "Show version.")
-	flag.Parse()
-
-	return cli_flags
-}
-
-func getCliArgs() cliArgs {
-	cli_args := cliArgs{}
-
-	if len(os.Args) > 1 { // is there a password arg
-		cli_args.clearPassword = &os.Args[1]
-	} else {
-		cli_args.clearPassword = nil
+	{ // setup cli flags
+		clInfo.versionFlag = flag.Bool("version", false, "Show version.")
+		flag.Parse()
 	}
 
-	return cli_args
+	{ // setup cli args
+		if len(os.Args) > 1 { // is there a password arg
+			clInfo.clearPasswordArg = &os.Args[1]
+		} else {
+			clInfo.clearPasswordArg = nil
+		}
+	}
+
+	return clInfo
 }
