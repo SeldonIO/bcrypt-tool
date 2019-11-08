@@ -1,5 +1,6 @@
+VERSION=$(shell cat ./VERSION)
 build: fmt imports lint
-	go build -v -o bcrypt-tool ./cmd/bcrypt-tool.go
+	go build -v -ldflags="-w -X main.Version=$(VERSION)" -o bcrypt-tool ./cmd/bcrypt-tool.go
 
 fmt:
 	go fmt ./...
